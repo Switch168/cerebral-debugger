@@ -36,30 +36,32 @@ export function updateSignal({ props, state }) {
 
   const signal = state.get(signalPath)
 
-  if (signal.functionsRun[execution.functionIndex]) {
-    state.push(
-      `${signalPath}.functionsRun.${execution.functionIndex}.data`,
-      execution.data
-    )
-  } else {
-    state.merge(`${signalPath}.functionsRun.${execution.functionIndex}`, {
-      payload: execution.payload,
-      data: execution.data ? [execution.data] : [],
-      executedIds: [],
-    })
+  try {
+    if (signal.functionsRun[execution.functionIndex]) {
+      state.push(
+        `${signalPath}.functionsRun.${execution.functionIndex}.data`,
+        execution.data
+      )
+    } else {
+      state.merge(`${signalPath}.functionsRun.${execution.functionIndex}`, {
+        payload: execution.payload,
+        data: execution.data ? [execution.data] : [],
+        executedIds: [],
+      })
+    }
+
+    if (execution.data) {
+      state.unshift('history', {
+        executionId: execution.executionId,
+        signalName: signal.name,
+        actionName: getActionNameByIndex(signal, execution.functionIndex),
+        data: execution.data,
+      })
+    }
+  }catch (error) {}
   }
 
-  if (execution.data) {
-    state.unshift('history', {
-      executionId: execution.executionId,
-      signalName: signal.name,
-      actionName: getActionNameByIndex(signal, execution.functionIndex),
-      data: execution.data,
-    })
-  }
-}
-
-export function updateModel({ props, state }) {
+  export function updateModel({ props, state }) {
   state.set(['model'].concat(props.path).join('.'), props.value)
 }
 
